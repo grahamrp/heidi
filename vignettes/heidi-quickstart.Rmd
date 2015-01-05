@@ -1,0 +1,143 @@
+---
+title: "HEIDI quickstart"
+author: "Graham Parsons"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{HEIDI quickstart}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+This document discusses the structure of the HEIDI API and presents an example of using the `heidi` package to download data.
+
+## About the HEIDI API
+The API provides a way of defining and downloading a dataset from HEIDI. The structures for HEIDI's many datasets appear to be varied, making it difficult to create a standardised query mechanism. However, most queries can be thought of as requesting a specific *measure* (e.g. Student Full-time Equivalents) broken down across one or more *dimensions* (e.g. by Institution, Mode of Study, Ethnicity).
+
+### Value Types, Row Types and Fields
+In the API terminology:
+
+  * a `valuetype` is a measure
+  * a `rowtype` is a dimension
+  * a `field` is a dimension
+
+The difference between a `rowtype` and a `field` is that a single `rowtype` *must* be specified whereas one or more additional `fields` are optional, to break the measure down further.
+
+## An Example
+This example will fetch *HE students Full-person equivalents* (the `valuetype`) by *Institution* (the `rowtype`) and *JACS subject area* (a `field`). This example only retrieves one year of data for 2012/13.
+
+### Aim
+The end result should be a call to the `GetData()` function with the correct `valuetype`, `rowtype`, `field` and `year` arguments, saving the function's output into a `heidi_data` variable for later use. The final function call will look something like this:
+```{r aim, eval=FALSE}
+heidi_data <- GetData(rowtype = 'the id for Institution',
+                      year = 'the id for 2012/13',
+                      valuetype = 'the id for HE students Full-person equivalent',
+                      field1 = 'the id for JACS subject area')
+```
+Note that *identifiers* for the arguments must be provided, rather than their descriptive names. The problem is that none of the identifiers are known in advance and they don't follow any predictable naming pattern, so HEIDI must first be queried to ascertain each of the ids before the `GetData()` arguments can be assembled.
+
+### Setup
+The first step is to run the `setup` function, supplying it with your organisation's unique identifier and HEIDI API key. Both should be available from the HEIDI local adminstrator's web interface, run `?setup` for more information. **The output of `setup` must be saved into a variable called `base64userpass`** as all of the `heidi` functions look for this exact variable name for the HEIDI authentication information.
+
+```{r setup, eval=FALSE}
+library(heidi)
+base64userpass <- setup('1234', '1f1f1f1f-2e2e-3d3d-4c4c-5b5b5b5b5b5b')  # change to your details
+
+# If you are behind a proxy server you may need to uncomment and run the code below
+# set_config(use_proxy(url='yourproxy.ac.uk',8080))
+
+```
+
+### Get the ids
+#### Row Type
+First fetch the available `rowtypes` and save them in a dataframe. `ListRowTypes()` will list each available `rowtype` including its id and a descriptive name. It is best to save the results in a dataframe so that they can be referred to later.
+```{r get_rowtype, eval=FALSE}
+RowTypes <- ListRowTypes()
+```
+
+The `RowTypes` dataframe created from `ListRowTypes()` looks like this:
+
+|Id    |Label                                       |
+|:-----|:-------------------------------------------|
+|70430 |JACS Principal Subject (2012/13 onwards)    |
+|70431 |Cost Centre (2012/13 onwards)               |
+|3297  |Institution                                 |
+|3298  |HESACode Principal Subject                  |
+|3299  |Cost Centre (2003/04 & before)              |
+|3300  |JACS Principal Subject (2006/07 & before)   |
+|3301  |Cost Centre (2004/05 to 2011/12)            |
+|3302  |JACS Principal Subject (2007/08 to 2011/12) |
+|3303  |Unit of assessment (2007/08 to 2012/13)     |
+|3304  |UCAS JACS Subject Line (2011/12 & before)   |
+|68689 |UCAS JACS Subject Line (2012/13 onwards)    |
+|79364 |Unit of assessment (2013/14 onwards)        |
+
+The table shows that the *Institution* row type has an id of "3297". Whilst it is possible look the id up in the table and pass it directly to `GetData`, i.e. `GetData(rowtype = "3297", ...)` the resultant function call is hard to understand. It is better to save the results into intermediate, well-named variables, and pass the variables into the final call to `GetData`.
+```{r save_rowtype_id, eval=FALSE}
+id_rowtype <- RowTypes[RowTypes$Label == 'Institution', 'Id']
+print(id_rowtype)
+```
+
+#### Year
+The available years can be obtained in the same way as the row types. The only difference is that this time the Institution `rowtype` can be supplied to limit the years to those applicable to Institution data.
+```{r get_year, eval=FALSE}
+Years <- ListYears(rowtype = id_rowtype)
+id_year <- Years[Years$Label == '2012/13', 'Id']
+print(id_year)
+```
+
+#### Value Type and Domains
+Next is to ascertain the id for the *HE students Full-person equivalents* `valuetype`. Rather than retrieving the huge list of value types available from HEIDI, *Domains* group the value types up into distinct sets to allow for filtering, e.g. HESA Student, HESA Staff, Applications. *HE students Full-person equivalents* is under the *HESA Student* domain. As before, the id for the domain is saved in a variable for later.
+
+```{r get_domains, eval=FALSE}
+Domains <- ListDomains()
+id_domain <- Domains[Domains$Label == 'HESA student', 'Id']
+```
+It is then possible to retrieve the list of value types, filtered to those applicable for the *Institution* row type and within the *HESA Student* domain.
+```{r get_value_types, eval=FALSE}
+ValueTypes <- ListValueTypes(
+  rowtype = id_rowtype,
+  domain = id_domain)
+
+# Save the id for HE students FPE for later
+id_valtype <- ValueTypes[ValueTypes$Label == 'HE students Full-person equivalent', 'Id']
+```
+
+#### Field
+The last id to obtain is for the *JACS subject area* `field`. As with the value types before, there are a huge number, and they need to be filtered to just those applicable for the required `year`, `rowtype` and `valuetype`.
+```{r get_field, eval=FALSE}
+Fields <- ListFields(rowtype = id_rowtype,
+                    year = id_year,
+                    valuetype = id_valtype)
+id_field1 <- Fields[Fields$Label == 'JACS subject area', 'Id']
+```
+
+### Get the data
+Now that the ids are obtained, getting the data is simply a matter of providing the ids to the `GetData` function.
+
+```{r get_data, eval=FALSE}
+heidi_data <- GetData(rowtype = id_rowtype,
+                 year = id_year,
+                 valuetype = id_valtype,
+                 field1 = id_field1)
+```
+### Get the data for different year
+Unfortunately, to repeat an identical request to retrieve a different year of data is not simply a case of changing the `year` id and keeping the other ids the same. This is because the field ids refer to a field *for a particular year* and cannot be used across years. For example, the *JACS subject area* id was "70450" in the above example for year 2012/13, but for 2011/12 it is "63130". Therefore **the following code does not work**.
+
+```{r get_previous_data, eval=FALSE}
+# This does not work!
+# -------------------
+id_year <- Years[Years$Label == '2011/12', 'Id']   # Change the year to 2011/12
+# Repeat the GetData call
+heidi_data2 <- GetData(rowtype = id_rowtype,
+                 year = id_year,
+                 valuetype = id_valtype,
+                 field1 = id_field1)
+```
+
+It is still possible to iterate over several years, fetching the data for each year, but the correct field ids must be used for each year.
+
+## Useful links
+[The HEIDI API Specification](http://www.heidi.ac.uk/dox/API_Specification.pdf)  
+[The CodePlex where the API is developed](https://hesaheidiapi.codeplex.com/)
+

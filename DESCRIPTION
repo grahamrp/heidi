@@ -1,0 +1,19 @@
+Package: heidi
+Title: An implementation of the HESA HEIDI API in R
+Version: 0.0.0.9000
+Authors@R: c(person("Brendan", "Fawcett", role = "aut", comment = "Original author of main codebase, see http://coursedata.le.ac.uk/2013/04/29/r-and-heidi-api/"),
+            person("Graham", "Parsons", role = c("aut", "cre"), comment = "Package maintainer", email = "graham@grahamrp.com")
+          )
+Description: An implementation of the HESA HEIDI API in R. It enables
+    a user to connect to the Higher Education Statistics Agency API and
+    download specified data. Some attempt is made to simplify the API
+    interface for the user.
+Depends: R (>= 3.0.3)
+License: GPL-2
+LazyData: true
+Imports: 
+    httr,
+    RCurl,
+    XML
+Suggests: knitr
+VignetteBuilder: knitr
