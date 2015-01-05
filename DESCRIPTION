@@ -8,10 +8,12 @@ Description: An implementation of the HESA HEIDI API in R. It enables
     a user to connect to the Higher Education Statistics Agency API and
     download specified data. Some attempt is made to simplify the API
     interface for the user.
+URL: https://github.com/grahamrp/heidi
+BugReports: https://github.com/grahamrp/heidi/issues
 Depends: R (>= 3.0.3)
 License: GPL-2
 LazyData: true
-Imports: 
+Imports:
     httr,
     RCurl,
     XML
