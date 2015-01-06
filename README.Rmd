@@ -21,7 +21,7 @@ The `heidi` package is a collection of R functions to access the [HEIDI API](htt
 
 The main benefits of using the API in R, rather than the HEIDI web interface are
 
-- Easy to select data broken down by several dimensions -- no more drilling through the data explorer
+  - Easy to select data broken down by several dimensions (no more repetitive drilling through the data explorer)
 - The data is provided in a 'long' rather than 'wide' format, making it easier to use later, e.g. in Excel pivot tables
 - Column headings are shorter and easier to understand
 - Data downloads can be scripted, for example to download multiple years of data
@@ -44,7 +44,7 @@ Usage
 -----
 Use `browseVignettes(package = "heidi")` for an introduction to the package and a detailed example.
 
-This is a quick example that downloads a dataset of HE student counts in 2012/13 for each institution and subject.
+This is a shorter example that downloads a dataset of HE student counts in 2012/13 for each institution and subject.
 
 ```{r example, eval=FALSE}
 library(heidi)
