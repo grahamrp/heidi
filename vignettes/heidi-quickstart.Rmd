@@ -21,10 +21,10 @@ In the API terminology:
   * a `rowtype` is a dimension
   * a `field` is a dimension
 
-The difference between a `rowtype` and a `field` is that a single `rowtype` *must* be specified whereas one or more additional `fields` are optional, to break the measure down further.
+`rowtype` and `field` are both dimensions, but the difference is that a single `rowtype` *must* be specified in a query whereas one or more additional `fields` are optional.
 
 ## An Example
-This example will fetch *HE students Full-person equivalents* (the `valuetype`) by *Institution* (the `rowtype`) and *JACS subject area* (a `field`). This example only retrieves one year of data for 2012/13.
+This example will fetch *HE students Full-person equivalents* (the `valuetype`) by *Institution* (the `rowtype`) and *JACS subject area* (a `field`). This example retrieves data for the `year` 2012/13.
 
 ### Aim
 The end result should be a call to the `GetData()` function with the correct `valuetype`, `rowtype`, `field` and `year` arguments, saving the function's output into a `heidi_data` variable for later use. The final function call will look something like this:
@@ -75,7 +75,6 @@ The `RowTypes` dataframe created from `ListRowTypes()` looks like this:
 The table shows that the *Institution* row type has an id of "3297". Whilst it is possible look the id up in the table and pass it directly to `GetData`, i.e. `GetData(rowtype = "3297", ...)` the resultant function call is hard to understand. It is better to save the results into intermediate, well-named variables, and pass the variables into the final call to `GetData`.
 ```{r save_rowtype_id, eval=FALSE}
 id_rowtype <- RowTypes[RowTypes$Label == 'Institution', 'Id']
-print(id_rowtype)
 ```
 
 #### Year
@@ -83,7 +82,6 @@ The available years can be obtained in the same way as the row types. The only d
 ```{r get_year, eval=FALSE}
 Years <- ListYears(rowtype = id_rowtype)
 id_year <- Years[Years$Label == '2012/13', 'Id']
-print(id_year)
 ```
 
 #### Value Type and Domains
@@ -130,9 +128,9 @@ Unfortunately, to repeat an identical request to retrieve a different year of da
 id_year <- Years[Years$Label == '2011/12', 'Id']   # Change the year to 2011/12
 # Repeat the GetData call
 heidi_data2 <- GetData(rowtype = id_rowtype,
-                 year = id_year,
+                 year = id_year,  # the new year, 2011/12 instead of 2012/13
                  valuetype = id_valtype,
-                 field1 = id_field1)
+                 field1 = id_field1)  # the 2012/13 identifier for JACS subject 
 ```
 
 It is still possible to iterate over several years, fetching the data for each year, but the correct field ids must be used for each year.
