@@ -14,7 +14,7 @@ GetData(rowtype, year, valuetype, field1 = "", field2 = "", field3 = "",
 
 \item{valuetype}{Supply a value type identifier to specify the measure required. Must be compatible with the other arguments.}
 
-\item{field}{Optionally supply up to five fields (field1, field2, etc.) with which to break down the value type. Must be compatible with the other arguments.}
+\item{field1,field2,field3,field4,field5}{Optionally supply up to five fields with which to break down the value type. Must be compatible with the other arguments. \strong{A field id for a particular field is not consistent across years}.}
 }
 \value{
 Returns a dataframe containing the specified data. The data is in 'long' rather than 'wide' format, i.e. with one row per rowtype/field combination.
