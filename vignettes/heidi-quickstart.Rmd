@@ -37,7 +37,7 @@ heidi_data <- GetData(rowtype = 'the id for Institution',
 Note that *identifiers* for the arguments must be provided, rather than their descriptive names. The problem is that none of the identifiers are known in advance and they don't follow any predictable naming pattern, so HEIDI must first be queried to ascertain each of the ids before the `GetData()` arguments can be assembled.
 
 ### Setup
-The first step is to run the `setup` function, supplying it with your organisation's unique identifier and HEIDI API key. Both should be available from the HEIDI local adminstrator's web interface, run `?setup` for more information. **The output of `setup` must be saved into a variable called `base64userpass`** as all of the `heidi` functions look for this exact variable name for the HEIDI authentication information.
+The first step is to run the `setup` function, supplying it with your organisation's unique identifier and HEIDI API key. Both should be available from the HEIDI local administrator's web interface, run `?setup` for more information. **The output of `setup` must be saved into a variable called `base64userpass`** as all of the `heidi` functions look for this exact variable name for the HEIDI authentication information.
 
 ```{r setup, eval=FALSE}
 library(heidi)
