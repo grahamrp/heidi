@@ -20,6 +20,9 @@ To install the heidi package run the following commands in an R session.
 # If you don't already have the devtools package, install it
 install.packages("devtools")
 # Use devtools to install heidi directly from github
+# If you are behind a proxy server uncomment and run the two lines below
+# library(httr)
+# set_config(use_proxy(url = 'myproxy.ac.uk', 8080))
 devtools::install_github("grahamrp/heidi", build_vignettes = TRUE)
 
 # For more details on how to use the package view the quickstart vignette
