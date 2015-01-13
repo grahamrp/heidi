@@ -134,7 +134,7 @@ heidi_data2 <- GetData(rowtype = id_rowtype,
                  field1 = id_field1)  # the 2012/13 identifier for JACS subject 
 ```
 
-It is still possible to iterate over several years, fetching the data for each year, but the correct field ids must be used for each year.
+It is still possible to iterate over several years, fetching the data for each year, but the correct field ids must be used for each year. See the "Downloading Multiple Years of Data" vignette for an example.
 
 ## Useful links
 [The HEIDI API Specification](http://www.heidi.ac.uk/dox/API_Specification.pdf)  

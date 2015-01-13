@@ -1,0 +1,112 @@
+---
+title: "Downloading Multiple Years of Data"
+author: "Graham Parsons"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Downloading Multiple Years of Data}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+The multiple years problem
+--------------------------
+Each HEIDI data request fetches one year of data and is specified by the unique identifiers for each of its elements (Row Type, Value Type, Year, and optional Fields). Whilst the main elements of a report specification (the Row Type and Value Type) stay the same across each year, the unique identifiers for Fields are different across years. For example *Gender* will have a different identifier from 2011/12 to 2012/13. So it is not possible to simply iterate over the required year ids to get several years of data like this:
+
+```{r problem_demo, eval=FALSE}
+# This does not work!
+# -------------------
+results <- data.frame()
+year_ids <- GetYearIds(c('2009/10','2010/11','2011/12'))
+for(year in year_ids){
+  temp <- GetData(rowtype = id_institution,
+                 year = year,
+                 valuetype = id_student_fpe,
+                 field1 = id_gender)  # id is only valid for a specific year
+  results <- rbind(results, temp)
+}
+```
+
+An example solution
+-------------------
+One solution to the problem is to:
+
+- *Fetch in advance* all of the Field identifiers for each required year and save for later
+- Make a data request for each of the required years, using the Field id that corresponds to that year
+- Merge the results
+
+This example fetches *HE students Full-person equivalents* (Value Type) by *Institution* (Row Type) and *Gender* (this is the Field for which the id will change depending on the year) for 2009/10, 2010/11, and 2011/12.
+
+First the authentication is set up, then the ids for the Row Type, Value Type and Years are retrieved.
+
+```{r get_main_ids, eval=FALSE}
+library(heidi)
+# Setup authentication using your organisation's HEIDI API key
+base64userpass <- setup('1234', '1f1f1f1f-2e2e-3d3d-4c4c-5b5b5b5b5b5b')
+
+# Get identifiers for Row Type, Value Type
+id_rowtype <- subset(ListRowTypes(), 
+                     Label == 'Institution', select = 'Id', drop = TRUE)
+id_valtype <- subset(ListValueTypes(rowtype = id_rowtype),
+             Label == 'HE students Full-person equivalent', select = 'Id', drop = TRUE)
+# Get the required Year ids and labels (assuming they exist in HEIDI)
+Years <- subset(ListYears(rowtype = id_rowtype),
+                  Label %in% c('2009/10','2010/11','2011/12'))
+```
+
+Then a list of available Fields created, and labelled according to their associated year:
+```{r get_field_ids, eval=FALSE}
+# Create a Field id lookup by 'year'
+Fields <- data.frame()
+for(y in Years$Label){  # Repeat for each Year
+  tmp <- ListFields(rowtype = id_rowtype,
+                    year = Years[Years$Label == y, 'Id'],
+                    valuetype = id_valtype)
+  tmp$year <- y  # add a label for the 'year'
+  Fields <- rbind(Fields, tmp)  # combine into one dataframe
+}
+rm(tmp)
+```
+
+If we look at *Gender* in the Fields list we can see its identifier changes over time:
+
+|Id    |Label  |year    |
+|:-----|:------|:-------|
+|6271  |Gender |2009/10 |
+|4512  |Gender |2010/11 |
+|63133 |Gender |2011/12 |
+
+It seems that, as far as the HEIDI data structure is concerned, the *Gender* field in 2009/10 is a completely different field to the *Gender* field in 2010/11, they just happen to share the same Label.
+
+Now that we have the Field ids we can create a loop to iterate over each year, constructing `GetData()` requests with the right ids.
+
+```{r get_data, eval=FALSE}
+results <- data.frame()
+for(y in Years$Label){  # For each Year:
+  print(y)
+  # Get the Field Id for Year
+  id_year <- Years[Years$Label == y, 'Id']
+  # Get the Field Id for Gender for this Year
+  id_field_gender <- Fields[Fields$year == y &
+                            Fields$Label == 'Gender', 'Id']
+
+  # Construct the query and get the data, appending to 'results'
+  tmp <- GetData(rowtype = id_rowtype,
+                 year = id_year,
+                 valuetype = id_valtype,
+                 field1 = id_field_gender
+  )
+  # Reorder the columns to be in alphabetically order
+  tmp[, order(colnames(tmp))]
+  # Append this year to the results dataframe
+  results <- rbind(results, tmp)
+}
+```
+
+Note that the columns of each temporary dataframe were sorted alphabetically before combining them together because we cannot rely on a consistent field order between requests. For example, if we had Gender and Age as fields in the report, in the 2010/11 data the Gender column might appear first and in the 2011/12 data the Age column might appear first.
+
+Looking ahead
+-------------
+Hopefully future versions of the HEIDI API will abstract away some of these details, perhaps providing support for downloading multiple years of data in one request. However, it looks as if the current limitations are a product of the data structures behind the API and it would take a fair amount of work to restructure.
+
+I hope that future versions of the `heidi` package will provide more of a wrapper around these core functions to allow for more intuitive multiple-year requests.
