@@ -239,7 +239,7 @@ GetData <- function(rowtype,year,valuetype,field1="",field2="",field3="",field4=
     stringsAsFactors = FALSE)
   # Rename the columns, looking up the correct names from the Data Specification
   names(data) <- c(paste(DataSpec[["Label","RowType"]]),
-                   paste(DataSpec[["Label","RowType"]],"-label",sep=""),
+                   paste(DataSpec[["Label","RowType"]],"_label",sep=""),
                    "Year",
                    paste(DataSpec[["Label","ValueType"]]))
 
@@ -259,7 +259,7 @@ GetData <- function(rowtype,year,valuetype,field1="",field2="",field3="",field4=
                           FieldLabel,
                           stringsAsFactors = FALSE)
       names(fdata) <- c(paste(DataSpec[["Label",i]]),
-                        paste(DataSpec[["Label",i]],"-label",sep=""))
+                        paste(DataSpec[["Label",i]],"_label",sep=""))
       data <- cbind(data,fdata)
     }
   }
