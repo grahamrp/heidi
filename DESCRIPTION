@@ -1,6 +1,6 @@
 Package: heidi
 Title: An implementation of the HESA HEIDI API in R
-Version: 0.1.0.9000
+Version: 0.2.0
 Authors@R: c(person("Brendan", "Fawcett", role = "aut", comment = "Original author of main codebase, see http://coursedata.le.ac.uk/2013/04/29/r-and-heidi-api/"),
             person("Graham", "Parsons", role = c("aut", "cre"), comment = "Package maintainer", email = "graham@grahamrp.com")
           )
