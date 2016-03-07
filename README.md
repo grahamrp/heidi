@@ -14,6 +14,13 @@ The main benefits of using the API in R, rather than the HEIDI web interface are
 Installing
 ----------
 
+Note the heidi package requires an older version of httr to be installed (any version prior to httr 1.0). You can install an older version by running the following commands.
+
+``` r
+packageurl <- "https://cran.r-project.org/src/contrib/Archive/httr/httr_0.6.1.tar.gz"
+install.packages(packageurl, repos=NULL, type="source")
+```
+
 To install the heidi package run the following commands in an R session.
 
 ``` r

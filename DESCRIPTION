@@ -10,12 +10,15 @@ Description: An implementation of the HESA HEIDI API in R. It enables
     interface for the user.
 URL: https://github.com/grahamrp/heidi
 BugReports: https://github.com/grahamrp/heidi/issues
-Depends: R (>= 3.0.3)
+Depends:
+    R (>= 3.0.3)
 License: GPL-2
 LazyData: true
 Imports:
-    httr,
+    httr (< 1.0),
     RCurl,
     XML
-Suggests: knitr
+Suggests:
+    knitr
 VignetteBuilder: knitr
+RoxygenNote: 5.0.1
